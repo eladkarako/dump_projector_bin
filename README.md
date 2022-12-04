@@ -57,8 +57,66 @@ built on linux using cross-os mingw-64 which works fine on Windows.
 it has an additional manifest, version-info, and an icon to make it Windows 10/11 compatible.  
   
 it works on a single file, but you can write a script that loops through all the `exe` (or whatever files really) in a folder.  
-  
-just to be clear, it doesn't run the file and dumps its heap.  
+
+<hr/>
+
+say you've placed the program under `D:\Software\dump_projector.exe`,  
+and you've got a ton of such exe files on your desktop (or something..)  
+
+just to be safe, 
+move all those "flash" exe files to a folder on their own,  
+create a new blank file named `process_all_exe_files_in_this_folder.cmd`  
+and copy paste the following code in to it (don't forget to adjust the placement of `dump_projector.exe`)  
+
+```cmd
+@echo off
+chcp 65001 1>nul 2>nul
+
+pushd "%~sdp0"
+
+for %%x in (*.exe) do ( 
+  call :METHOD__GENERIC %%x
+)
+
+goto END
+
+::-------------------------------------
+
+:METHOD__GENERIC
+  "D:\Software\dump_projector.exe" "%~f1" "%~sdp1%~n1.swf" 1>nul 2>nul
+  set "EXIT_CODE=%ErrorLevel%"
+
+  if ["%EXIT_CODE%"] EQU ["0"] (
+    echo [INFO] v  %~nx1 » %~n1.swf  1>&2
+  ) else (
+    echo [INFO] x  %~nx1 X %~n1.swf  1>&2
+  ) 
+  goto :EOF
+
+::-------------------------------------
+
+:END
+  echo. 1>&2
+  pause 1>&2
+  popd
+  exit /b 0
+```
+
+you'll get a file in the same name (with `.swf` extension),  
+and a minimal output.  
+
+the script isn't "digging deep" into the folder tree,  
+so you'll have to place them all in the same folder.  
+
+TIP:  
+if you've downloaded an old archive, ISO, etc..  
+place your file in a new folder and use 7zip with `7z e yourfile`  
+(not `7z x yourfile`) it will ignore the folder structure and simple extract all the files into the same folder.  
+you can use https://github.com/eladkarako/7z_bundle which supports some more formats..
+
+<hr/>
+
+just to be clear, it does NOT run the exe file, it just copy their bytes.
   
 <hr/>  
   
